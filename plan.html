@@ -1,0 +1,880 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>План · Дневник зала</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Дневник">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: one readable column, sticky tab bar; phases are colour-coded like weight plates (green 10, yellow 15, blue 20, red = stop) */
+:root{
+  --bg:#EEF0F3; --surface:#FFFFFF; --sunk:#E3E6EB; --ink:#14171C; --muted:#585F6B; --line:#D4D8DF;
+  --accent:#2347C4; --on-accent:#FFFFFF;
+  --p1:#1F8A57; --p2:#C79200; --p3:#2347C4; --danger:#C2342C;
+  --f-display:"Unbounded","Arial Black",system-ui,sans-serif;
+  --f-body:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#101217; --surface:#191C23; --sunk:#22262E; --ink:#E8EAEE; --muted:#9BA2AE; --line:#2D323B;
+    --accent:#86A0FF; --on-accent:#0C1022;
+    --p1:#4CC487; --p2:#F0C23B; --p3:#86A0FF; --danger:#FF6E62; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101217; --surface:#191C23; --sunk:#22262E; --ink:#E8EAEE; --muted:#9BA2AE; --line:#2D323B;
+  --accent:#86A0FF; --on-accent:#0C1022;
+  --p1:#4CC487; --p2:#F0C23B; --p3:#86A0FF; --danger:#FF6E62; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;color-scheme:light}
+[hidden]{display:none!important}
+img{max-width:100%}
+.back{display:inline-flex;align-items:center;gap:6px;font-weight:600;text-decoration:none;font-size:14px}
+body{margin:0;padding-top:env(safe-area-inset-top,0px);background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15.5px;line-height:1.55}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:780px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;letter-spacing:-.01em}
+h1{font-size:clamp(26px,6vw,38px);font-weight:700;line-height:1.1}
+h2{font-size:20px;font-weight:700;line-height:1.25}
+h3{font-size:15px;font-weight:500;line-height:1.3}
+p{margin:0}
+a{color:var(--accent)}
+.muted{color:var(--muted)}
+.small{font-size:13.5px}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.label{font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;font-weight:600;color:var(--muted)}
+
+header.top{padding-block:28px 18px;display:grid;gap:14px}
+.facts{display:flex;flex-wrap:wrap;gap:8px}
+.fact{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 12px;display:grid;gap:0}
+.fact b{font-family:var(--f-mono);font-size:17px;font-variant-numeric:tabular-nums}
+.fact span{font-size:12px;color:var(--muted)}
+
+nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.tabrow{display:flex;gap:4px;overflow-x:auto;padding-block:8px;scrollbar-width:none}
+.tabrow::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;font:600 14px var(--f-body);color:var(--muted);background:none;border:0;border-radius:999px;padding:8px 14px;cursor:pointer}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+.tab:focus-visible,.seg button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+main{padding-block:22px 40px}
+section.panel{display:grid;gap:22px}
+.block{display:grid;gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:12px;min-width:0}
+.lead{font-size:16px;max-width:65ch}
+
+.seg{display:flex;background:var(--sunk);border-radius:12px;padding:4px;gap:4px}
+.seg button{flex:1 1 0;min-width:0;border:0;background:none;border-radius:9px;padding:8px 6px;font:600 13.5px var(--f-body);color:var(--muted);cursor:pointer;display:grid;gap:1px;justify-items:center}
+.seg button small{font-weight:500;font-size:11.5px}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgb(0 0 0 / .12)}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex:0 0 auto}
+.d1{background:var(--p1)}.d2{background:var(--p2)}.d3{background:var(--p3)}.dr{background:var(--danger)}
+
+.phase-note{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:12px;background:color-mix(in srgb,var(--ph) 13%,var(--surface));border:1px solid color-mix(in srgb,var(--ph) 35%,var(--line))}
+.phase-note .dot{margin-top:6px;background:var(--ph)}
+
+.day-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.ex-list{list-style:none;margin:0;padding:0;display:grid}
+.ex{display:grid;grid-template-columns:1fr auto;gap:2px 14px;padding-block:12px;border-top:1px solid var(--line)}
+.ex:first-child{border-top:0;padding-top:2px}
+.ex .name{font-weight:600}
+.ex .scheme{font-family:var(--f-mono);font-weight:700;font-size:15px;white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}
+.ex .meta{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.ex .cue{grid-column:1 / -1;font-size:13.5px;color:var(--muted);max-width:65ch}
+.chip{font-size:12px;font-weight:600;border-radius:999px;padding:2px 9px;background:var(--sunk);color:var(--ink);white-space:nowrap}
+.chip.rir{background:color-mix(in srgb,var(--ph) 18%,var(--surface))}
+.chip.warm{background:transparent;border:1px solid var(--line);color:var(--muted)}
+.ex.special .name{font-family:var(--f-display);font-weight:500;font-size:14px}
+.ex.special{background:var(--sunk);border-radius:10px;padding:10px 12px;border-top:0;margin-bottom:6px}
+.ex.special + .ex{border-top:0}
+.ex.tail{border-top:1px dashed var(--line)}
+
+table{border-collapse:collapse;width:100%;font-size:14px}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;background:var(--sunk)}
+td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.hl td{background:color-mix(in srgb,var(--accent) 9%,var(--surface))}
+tr.warm td{color:var(--muted)}
+
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:10px;counter-reset:s}
+.steps > li{display:grid;grid-template-columns:30px 1fr;gap:4px 12px;counter-increment:s;min-width:0}
+.steps > li::before{content:counter(s);grid-row:span 3;font-family:var(--f-mono);font-weight:700;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--sunk);font-size:13px}
+.steps > li > *{min-width:0}
+.steps .why{font-size:13.5px;color:var(--muted)}
+.steps .dose{font-family:var(--f-mono);font-size:13.5px;font-weight:700}
+
+.light{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.light .card{gap:6px;padding:14px}
+.light .card h3{display:flex;align-items:center;gap:8px}
+@media (max-width:620px){.light{grid-template-columns:1fr}}
+
+.levels{display:grid;gap:10px}
+.level{border-radius:14px;padding:14px 16px;background:var(--surface);border:1px solid var(--line);display:grid;gap:8px}
+.level-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.level ul{margin:0;padding-left:18px;display:grid;gap:4px}
+.level li span.mono{font-weight:700}
+
+.rule{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:14px;background:var(--ink);color:var(--bg)}
+.rule b{font-family:var(--f-display);font-weight:500}
+
+.timeline{display:grid;gap:10px}
+.ph{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;padding:14px 16px;background:var(--surface);border:1px solid var(--line);border-radius:14px}
+.ph .bar{grid-row:span 4;width:6px;border-radius:3px;background:var(--ph)}
+.ph ul{margin:4px 0 0;padding-left:18px;display:grid;gap:3px}
+
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (max-width:620px){.grid2{grid-template-columns:1fr}}
+.opt{display:grid;gap:4px}
+.opt .k{font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+.card h3.row{display:flex;align-items:center;gap:8px}
+ul.plain{margin:0;padding-left:18px;display:grid;gap:6px}
+.cols{columns:2 220px;column-gap:24px}
+.cols li{break-inside:avoid}
+
+footer{padding-block:10px 40px;font-size:12.5px;color:var(--muted)}
+footer ul{padding-left:18px;margin:6px 0 0;display:grid;gap:2px}
+@media (prefers-reduced-motion:no-preference){.tab,.seg button{transition:background .15s,color .15s}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="back" href="index.html">← Дневник</a>
+    <div class="label">8 недель · без осевой нагрузки</div>
+    <h1>Возвращение в&nbsp;зал</h1>
+    <p class="lead muted">Три тренировки в неделю, каждая до 80 минут. Ноги и спина нагружаются только там, где позвоночник лежит или сидит с опорой.</p>
+    <div class="facts">
+      <div class="fact"><b>3 × нед</b><span>Пн · Ср · Пт</span></div>
+      <div class="fact"><b>≤ 80 мин</b><span>с блоком спины</span></div>
+      <div class="fact"><b>2300 → 2700</b><span>ккал, за 4 недели</span></div>
+      <div class="fact"><b>1,6–2,2 г/кг</b><span>белка в день</span></div>
+      <div class="fact"><b>7+ ч</b><span>сна</span></div>
+    </div>
+  </header>
+</div>
+
+<nav class="tabs" aria-label="Разделы">
+  <div class="wrap">
+    <div class="tabrow" role="tablist">
+      <button class="tab" role="tab" data-tab="week" id="tab-week">Неделя</button>
+      <button class="tab" role="tab" data-tab="how" id="tab-how">Как выполнять</button>
+      <button class="tab" role="tab" data-tab="phases" id="tab-phases">8 недель</button>
+      <button class="tab" role="tab" data-tab="after" id="tab-after">После 8 недель</button>
+      <button class="tab" role="tab" data-tab="back" id="tab-back">Спина</button>
+      <button class="tab" role="tab" data-tab="posture" id="tab-posture">Осанка и живот</button>
+      <button class="tab" role="tab" data-tab="food" id="tab-food">Питание</button>
+      <button class="tab" role="tab" data-tab="mode" id="tab-mode">Сон и режим</button>
+    </div>
+  </div>
+</nav>
+
+<main class="wrap">
+
+<!-- НЕДЕЛЯ -->
+<section class="panel" data-panel="week" aria-labelledby="tab-week">
+  <div class="block">
+    <p class="lead">Каждую неделю одно и то же: <b>Пн — день 1, Ср — день 2, Пт — день 3</b>. Можно сдвигать, главное — день отдыха между тренировками. Выбери, на какой ты неделе, и подходы с повторами подстроятся.</p>
+    <div class="seg" role="group" aria-label="Текущая неделя">
+      <button type="button" data-phase="1" id="ph-btn-1"><span>Недели 1–3</span><small>вкат</small></button>
+      <button type="button" data-phase="2" id="ph-btn-2"><span>Недели 4–6</span><small>набор</small></button>
+      <button type="button" data-phase="3" id="ph-btn-3"><span>Недели 7–8</span><small>форма</small></button>
+    </div>
+    <div class="phase-note" id="phase-note"></div>
+  </div>
+  <div id="days" class="block"></div>
+  <p class="small muted">Запись <span class="mono">3 × 12–15</span> значит: 3 рабочих подхода с одним весом, в каждом от 12 до 15 повторов. Подробно — во вкладке <a href="#how">«Как выполнять»</a>.</p>
+</section>
+
+<!-- КАК ВЫПОЛНЯТЬ -->
+<section class="panel" data-panel="how" aria-labelledby="tab-how" hidden>
+  <div class="block">
+    <h2>Порядок любой тренировки</h2>
+    <ol class="steps">
+      <li><h3>Блок спины, 10 минут</h3><p class="why">Он же общая разминка. Упражнения — во вкладке <a href="#back">«Спина»</a>. Кардио не нужно.</p></li>
+      <li><h3>Разминочные подходы</h3><p class="why">В первом упражнении дня — 2 подхода: ~50% рабочего веса × 10, потом ~75% × 5, отдых около минуты. В первом упражнении на каждую новую группу мышц — 1 подход 50% × 12. Сколько разминки нужно, написано у каждого упражнения в плане.</p></li>
+      <li><h3>Рабочие подходы</h3><p class="why">Один и тот же вес во всех подходах упражнения. Отдых: жимы и тяги 2–3 мин, остальное 1,5–2 мин. Короткий отдых срезает повторы и даёт меньший рост.</p></li>
+      <li><h3>Пресс</h3><p class="why">Одно упражнение в конце каждой тренировки, 3 подхода. Зачем — во вкладке <a href="#posture">«Осанка и живот»</a>.</p></li>
+      <li><h3>Заминка, 3 минуты</h3><p class="why">Вис на турнике и растяжка передней поверхности бедра. По желанию.</p></li>
+    </ol>
+  </div>
+
+  <div class="block">
+    <h2>Что значит «в запасе»</h2>
+    <p class="lead">Сколько ещё повторов ты сделал бы с нормальной техникой, если бы не остановился. <b>«3 в запасе»</b> — подход уже тяжёлый, но 3 раза ещё точно выжал бы. Подход заканчиваешь сам, до отказа не доводишь.</p>
+    <p class="muted">Первые недели будешь ошибаться: после перерыва почти все занижают свой запас. Это нормально, к 3–4 неделе калибруется.</p>
+  </div>
+
+  <div class="block">
+    <h2>Пример: жим гантелей, недели 1–3</h2>
+    <p class="muted">Запись в плане: <span class="mono">3 × 12–15 · 3–4 в запасе</span>. Рабочий вес 16 кг в каждой руке.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Подход</th><th>Вес</th><th>Повторы</th><th>Отдых после</th></tr></thead>
+      <tbody>
+        <tr class="warm"><td>Разминка 1</td><td class="num">8 кг</td><td class="num">10</td><td class="num">1 мин</td></tr>
+        <tr class="warm"><td>Разминка 2</td><td class="num">12 кг</td><td class="num">5</td><td class="num">1–2 мин</td></tr>
+        <tr><td><b>Рабочий 1</b></td><td class="num">16 кг</td><td class="num">15</td><td class="num">2–3 мин</td></tr>
+        <tr><td><b>Рабочий 2</b></td><td class="num">16 кг</td><td class="num">13</td><td class="num">2–3 мин</td></tr>
+        <tr><td><b>Рабочий 3</b></td><td class="num">16 кг</td><td class="num">12</td><td class="num">→ след. упражнение</td></tr>
+      </tbody>
+    </table></div>
+    <p class="small muted">Повторы падают от подхода к подходу при том же весе — так и должно быть. Главное, чтобы все подходы попали в диапазон 12–15.</p>
+  </div>
+
+  <div class="block">
+    <h2>Когда добавлять вес</h2>
+    <p class="lead">Сделал верхнюю границу повторов <b>во всех</b> рабочих подходах — в следующий раз +2 кг на гантели или +1 плитка в тренажёре. Это называется двойная прогрессия: сначала растут повторы, потом вес.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Тренировка</th><th>Вес</th><th>Повторы</th><th>Решение</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td class="num">16 кг</td><td class="num">15 / 13 / 12</td><td>вес тот же</td></tr>
+        <tr><td>2</td><td class="num">16 кг</td><td class="num">15 / 14 / 13</td><td>вес тот же</td></tr>
+        <tr class="hl"><td>3</td><td class="num">16 кг</td><td class="num">15 / 15 / 15</td><td><b>дальше +2 кг</b></td></tr>
+        <tr><td>4</td><td class="num">18 кг</td><td class="num">13 / 12 / 12</td><td>снова растишь повторы</td></tr>
+      </tbody>
+    </table></div>
+    <p class="small muted">Когда переходишь в новую фазу, диапазон повторов становится ниже (например, 8–12 вместо 12–15). Вес сразу поднимаешь так, чтобы попасть в новый диапазон с нужным запасом.</p>
+  </div>
+
+  <div class="block">
+    <h2>Первая неделя: подбор весов</h2>
+    <ol class="steps">
+      <li><h3>Бери стартовый вес из таблицы ниже</h3><p class="why">Для тренажёров — вес, который сам назвал бы лёгким.</p></li>
+      <li><h3>Делай первый рабочий подход до нижней границы повторов</h3><p class="why">Остановись и честно оцени, сколько ещё смог бы.</p></li>
+      <li><h3>Поправь вес на следующий подход</h3><p class="why">Запас 5 и больше — добавь 2 кг. Запас 3–4 — оставь. Запас меньше 2 или не дотянул до нижней границы — убавь 2 кг.</p></li>
+      <li><h3>Запиши итоговый вес</h3><p class="why">С него начинаешь в следующий раз. Записывай вес и повторы каждой тренировки: без этого прогрессию не отследить.</p></li>
+    </ol>
+    <div class="tbl"><table>
+      <thead><tr><th>Упражнение</th><th>Старт, на руку</th><th>Ориентир к 8-й неделе</th></tr></thead>
+      <tbody>
+        <tr><td>Жим гантелей лёжа</td><td class="num">14–16 кг × 12–15</td><td class="num">24–28 кг × 6–10</td></tr>
+        <tr><td>Жим гантелей на наклонной</td><td class="num">12–14 кг × 12–15</td><td class="num">20–24 кг × 6–10</td></tr>
+        <tr><td>Махи в стороны</td><td class="num">4–6 кг × 15–20</td><td class="num">8–10 кг × 10–15</td></tr>
+        <tr><td>Бицепс на наклонной</td><td class="num">8–10 кг × 15–20</td><td class="num">12–14 кг × 10–15</td></tr>
+      </tbody>
+    </table></div>
+    <p class="small muted">Цифры — грубая оценка для человека, который раньше жал около 90 кг лёжа и год не тренировался. Реальный вес подберёшь в первую неделю.</p>
+  </div>
+
+  <div class="block">
+    <h2>Почему не проценты</h2>
+    <p class="lead">Проценты считают от текущего максимума на один раз. Его у тебя сейчас нет, а проверять его с грыжей после года перерыва — плохая идея. Запас повторов решает ту же задачу и подстраивается под самочувствие в конкретный день. По исследованиям, такой подход работает не хуже процентов, а по силе иногда лучше.</p>
+  </div>
+</section>
+
+<!-- 8 НЕДЕЛЬ -->
+<section class="panel" data-panel="phases" aria-labelledby="tab-phases" hidden>
+  <div class="block">
+    <h2>Три фазы</h2>
+    <div class="timeline">
+      <div class="ph" style="--ph:var(--p1)"><div class="bar"></div>
+        <div class="label">Недели 1–3</div><h3>Вкат</h3>
+        <ul class="small">
+          <li>Жимы и тяги <span class="mono">3 × 12–15</span>, 3–4 в запасе</li>
+          <li>Изоляция <span class="mono">3 × 15–20</span>, 3 в запасе</li>
+          <li>Неделя 1 — подбор весов, ничего не форсируешь</li>
+          <li>Блок спины уровень 1, ноги без внешнего веса на корпусе</li>
+        </ul>
+      </div>
+      <div class="ph" style="--ph:var(--p2)"><div class="bar"></div>
+        <div class="label">Недели 4–6</div><h3>Набор</h3>
+        <ul class="small">
+          <li>Жимы и тяги <span class="mono">3 × 8–12</span>, 2 в запасе</li>
+          <li>Изоляция <span class="mono">3 × 12–15</span>, 1–2 в запасе</li>
+          <li>Вес растёт почти каждую неделю</li>
+          <li>Блок спины уровень 2, в сплит-присед можно лёгкие гантели</li>
+        </ul>
+      </div>
+      <div class="ph" style="--ph:var(--p3)"><div class="bar"></div>
+        <div class="label">Недели 7–8</div><h3>Форма</h3>
+        <ul class="small">
+          <li>Жимы и тяги <span class="mono">4 × 6–10</span>, 1–2 в запасе</li>
+          <li>Изоляция <span class="mono">3 × 10–15</span>, 0–1 в запасе</li>
+          <li>Ближе всего к отказу за весь план</li>
+          <li>Блок спины уровень 3</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="block">
+    <h2>Что реально будет к 8-й неделе</h2>
+    <ul class="plain">
+      <li><b>Верх тела</b> вернётся быстрее всего: ядра в мышечных волокнах сохраняются после перерыва, поэтому мышцы, которые уже были, восстанавливаются быстрее, чем росли в первый раз. Жим гантелей лёжа — ориентировочно 24–28 кг × 8.</li>
+      <li><b>Вес тела</b> — плюс 1,5–2,5 кг, если калории дошли до цели и сон наладился.</li>
+      <li><b>Ноги</b> растут на тренажёрах, но старых приседов в этом плане нет. Сначала спина должна спокойно проходить уровень 3.</li>
+    </ul>
+    <p class="muted">Что дальше — во вкладке <a href="#after">«После 8 недель»</a>.</p>
+  </div>
+</section>
+
+<!-- ПОСЛЕ 8 НЕДЕЛЬ -->
+<section class="panel" data-panel="after" aria-labelledby="tab-after" hidden>
+  <div class="block">
+    <h2>Неделя 9: разгрузка</h2>
+    <p class="lead">Те же упражнения, вес −10–15%, подходов в два раза меньше, запас 4+ повтора. За 8 недель в суставах, связках и спине копится усталость, которую мышцы не чувствуют. После разгрузки веса обычно идут лучше, чем до неё.</p>
+  </div>
+
+  <div class="block">
+    <h2>Контрольная точка в конце 9-й недели</h2>
+    <ol class="steps">
+      <li><h3>Спина весь второй месяц была зелёной?</h3><p class="why">По <a href="#back">светофору</a>. От этого зависит, какой путь ниже.</p></li>
+      <li><h3>Вес тела растёт?</h3><p class="why">Среднее за неделю против среднего 4 недели назад.</p></li>
+      <li><h3>Веса в жимах и тягах растут?</h3><p class="why">Сравни записи недели 1 и недели 8.</p></li>
+      <li><h3>Фото сбоку</h3><p class="why">В тех же условиях, что в начале. Для осанки и живота это единственная честная проверка.</p></li>
+    </ol>
+  </div>
+
+  <div class="block">
+    <h2>Недели 10–16: второй цикл</h2>
+    <p class="muted">Структура та же: Пн первой грудь, Ср спина, Пт ноги. Веса продолжаешь с того места, где закончил.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Недели</th><th>Что делаем</th></tr></thead>
+      <tbody>
+        <tr><td class="num">10–12</td><td>Как «Набор»: <span class="mono">8–12</span> повторов, 2 в запасе</td></tr>
+        <tr><td class="num">13–15</td><td>Как «Форма»: <span class="mono">6–10</span> повторов, 1–2 в запасе</td></tr>
+        <tr><td class="num">16</td><td>Разгрузка</td></tr>
+      </tbody>
+    </table></div>
+    <p class="small muted">Дальше по кругу: 6 рабочих недель + 1 лёгкая.</p>
+  </div>
+
+  <div class="block">
+    <h2>Два пути</h2>
+    <div class="grid2">
+      <div class="card">
+        <h3 class="row"><span class="dot d1"></span>Спина была зелёной</h3>
+        <ul class="plain small">
+          <li><b>В пятницу первым — жим ногами или гакк</b>, что переносится лучше. Ягодичный мост после.</li>
+          <li>Старт с веса на 20 повторов: <span class="mono">3 × 15–20</span>. Плюс 5–10 кг в неделю, только если и на следующий день всё зелёное.</li>
+          <li>В гакке у тебя была боль на определённом весе. Рабочий вес держишь ниже этого порога и поднимаешь медленнее, чем в других упражнениях.</li>
+          <li>Присед со штангой — не раньше третьего цикла, и только если гакк идёт спокойно. Обойтись без него можно.</li>
+          <li>Румынскую и становую не возвращаем.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3 class="row"><span class="dot d2"></span>Была жёлтой или хуже</h3>
+        <ul class="plain small">
+          <li>Второй цикл без изменений, без осевой нагрузки.</li>
+          <li>К неврологу или реабилитологу, по возможности со свежей МРТ. Если 2 месяца аккуратной работы не успокоили спину, дальше гадать не надо.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="block">
+    <h2>Что меняется насовсем</h2>
+    <ul class="plain">
+      <li><b>Блок спины остаётся, но 5 минут:</b> боковая планка и гиперэкстензия с постепенно растущим весом. Сильные разгибатели спины — защита, когда вернутся ноги с весом.</li>
+      <li><b>Объём.</b> Если мышца отстаёт и есть время, добавь ей 1 подход в каждой тренировке (до 12–16 подходов в неделю). Появится 4-й день — можно перейти на верх/низ: верх тела дважды, ноги дважды.</li>
+      <li><b>Питание.</b> Набираешь дальше по +0,2–0,35 кг в неделю до веса, который был до перерыва, потом 4–6 недель на поддержке. Если живот растёт явно быстрее, чем веса в зале, — на поддержку раньше.</li>
+      <li><b>Креатин</b> пьёшь без перерывов, «курсы» не нужны.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- СПИНА -->
+<section class="panel" data-panel="back" aria-labelledby="tab-back" hidden>
+  <div class="block">
+    <h2>Что убрано на эти 8 недель</h2>
+    <p class="lead">Присед со штангой, гакк, жим ногами, румынская и становая тяга, тяга штанги в наклоне. Ноги работают в тренажёрах, где спина лежит или сидит с опорой, и в упражнениях на одну ногу без веса или с лёгкими гантелями.</p>
+    <p class="muted">Когда и как возвращать гакк или жим ногами — во вкладке <a href="#after">«После 8 недель»</a>.</p>
+  </div>
+
+  <div class="block">
+    <h2>Светофор: как понять, что упражнение можно делать</h2>
+    <div class="light">
+      <div class="card"><h3><span class="dot d1"></span>Зелёный</h3><p class="small">Боль во время упражнения не выше 3 из 10. Через сутки как было, утром не хуже.</p><p class="small"><b>Продолжай, вес можно добавлять.</b></p></div>
+      <div class="card"><h3><span class="dot d2"></span>Жёлтый</h3><p class="small">Боль 4–5 из 10, или на следующий день спина хуже обычного.</p><p class="small"><b>Вес −20% или амплитуду меньше. Не прибавляй, пока не станет зелёным.</b></p></div>
+      <div class="card"><h3><span class="dot dr"></span>Красный</h3><p class="small">Больше 5 из 10, стреляет в ногу, немеет, слабеет нога.</p><p class="small"><b>Упражнение сразу прекращай. Повторилось — к неврологу.</b></p></div>
+    </div>
+    <p class="small muted">Жжение и усталость в мышцах — это не боль, светофор их не учитывает.</p>
+  </div>
+
+  <div class="rule"><span class="dot d2" style="margin-top:7px"></span><p><b>Первый час после сна не наклоняйся вперёд.</b> Ночью диски набирают воду, и утром нагрузка на них при наклоне выше. Носки и обувь надевай сидя, подтягивая ногу к себе, а не наклоняясь. Контроль утренних наклонов — одно из немногих доказанных средств против боли в пояснице.</p></div>
+
+  <div class="block">
+    <h2>Утро, каждый день, 10 минут</h2>
+    <ol class="steps">
+      <li><h3>Дыхание 90/90</h3><p class="dose">5 вдохов, 2 мин</p><p class="why">Лёжа на спине, стопы на стене или на кровати, колени и бёдра под 90°. Чуть подкрути таз, чтобы поясница коснулась пола. Вдох носом 4 с, полный выдох ртом 6–8 с, на выдохе рёбра уходят вниз, пресс включается сам. Учит держать рёбра и таз в нормальном положении. Подробнее — во вкладке <a href="#posture">«Осанка и живот»</a>.</p></li>
+      <li><h3>Прогибы лёжа на животе</h3><p class="dose">10 раз, медленно</p><p class="why">Ложишься на живот, ладони под плечами. Выпрямляешь руки, таз остаётся на полу, поясница и ягодицы расслаблены, наверху выдох. Заодно это тест: если боль из ноги уходит или смещается к центру поясницы, упражнение твоё. Если боль усиливается или уходит дальше в ногу, пропускай этот пункт.</p></li>
+      <li><h3>Кошка-верблюд</h3><p class="dose">8 циклов</p><p class="why">На четвереньках плавно округляешь и прогибаешь спину. Амплитуда маленькая, без дожима в крайних точках. Это движение без нагрузки: убирает утреннюю скованность, но наклоном не считается.</p></li>
+      <li><h3>Птица-собака</h3><p class="dose">2 × 6 на сторону, держать 8 с</p><p class="why">На четвереньках вытягиваешь руку и противоположную ногу в линию с корпусом. Таз не перекашивается, поясница не прогибается. Включает мышцы вокруг позвоночника без нагрузки на диск.</p></li>
+      <li><h3>Ягодичный мост</h3><p class="dose">2 × 10, пауза наверху 2 с</p><p class="why">Лёжа на спине, стопы у таза. Поднимаешь таз за счёт ягодиц, наверху тело в линию, поясницу не выгибаешь. После полугода сидения ягодицы «выключены», а они разгружают поясницу при любом движении.</p></li>
+      <li><h3>Растяжка передней поверхности бедра в выпаде на колене</h3><p class="dose">2 × 30 с на сторону</p><p class="why">Колено на полу, вторая нога впереди. Сжимаешь ягодицу стоящей на колене ноги и чуть подаёшь таз вперёд — тянет спереди бедра. Поясницу не прогибать.</p></li>
+      <li><h3>Разгибание грудного отдела на спинке стула</h3><p class="dose">8–10 раз</p><p class="why">Сидишь на стуле, руки за головой, верх спины (уровень лопаток) упирается в спинку. Отклоняешься назад через спинку, поясница остаётся прижатой к сиденью. Если есть ролик — то же самое лёжа на ролике под лопатками, но не под поясницей.</p></li>
+    </ol>
+  </div>
+
+  <div class="block">
+    <h2>Блок спины перед тренировкой, 10 минут</h2>
+    <p class="muted">Он же разминка и он же работа на укрепление спины. Уровень меняется вместе с фазой. Всё делается без осевой нагрузки.</p>
+    <div class="levels">
+      <div class="level">
+        <div class="level-head"><span class="dot d1"></span><h3>Уровень 1 · недели 1–3</h3></div>
+        <ul>
+          <li>Птица-собака — <span class="mono">2 × 6</span> на сторону, держать 8 с</li>
+          <li>Мёртвый жук (лёжа на спине, рука и противоположная нога опускаются, поясница прижата) — <span class="mono">2 × 8</span> на сторону</li>
+          <li>Боковая планка с колен — <span class="mono">2 × 20 с</span> на сторону</li>
+          <li>Ягодичный мост — <span class="mono">2 × 12</span></li>
+          <li>Гиперэкстензия 45°, удержание с ровной спиной — <span class="mono">2 × 15 с</span>. Если жёлтая зона — пропусти до уровня 2</li>
+        </ul>
+      </div>
+      <div class="level">
+        <div class="level-head"><span class="dot d2"></span><h3>Уровень 2 · недели 4–6</h3></div>
+        <ul>
+          <li>Птица-собака — <span class="mono">2 × 8</span> на сторону, держать 10 с</li>
+          <li>Боковая планка с ног — <span class="mono">2 × 20–30 с</span> на сторону</li>
+          <li>Жим Паллофа (стоя боком к блоку, руки с рукоятью выпрямляешь перед грудью и не даёшь корпусу развернуться) — <span class="mono">2 × 10</span> на сторону</li>
+          <li>Гиперэкстензия 45° в движении — <span class="mono">2 × 10</span>, медленно. Спина ровная, движение только в тазобедренных, наверху корпус в линию с ногами, не выше</li>
+        </ul>
+      </div>
+      <div class="level">
+        <div class="level-head"><span class="dot d3"></span><h3>Уровень 3 · недели 7–8</h3></div>
+        <ul>
+          <li>Боковая планка — <span class="mono">2 × 30–40 с</span> на сторону</li>
+          <li>Жим Паллофа — <span class="mono">2 × 12</span> на сторону, вес больше</li>
+          <li>Гиперэкстензия 45° с блином 5–10 кг у груди — <span class="mono">2 × 10–12</span></li>
+          <li>Птица-собака — <span class="mono">2 × 6</span> на сторону, держать 10 с</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="block">
+    <h2>Вис и заминка</h2>
+    <ul class="plain">
+      <li><b>Вис на турнике, 2–3 × 20–40 с.</b> Тело расслаблено, не раскачиваешься. Устают кисти или плечи — ноги на скамью, частичный вис. Слезай на скамью, а не спрыгивай.</li>
+      <li><b>Что он даёт.</b> Позвонки надолго не «вытягиваются»: после нагрузки всё возвращается за минуты. Но мышцы расслабляются и корешок разгружается — облегчение на минуты или часы реальное.</li>
+      <li><b>Инверсионный стол</b> — то же самое. Хватает угла 30–60°, начинай с 20–30°, 1–3 минуты, возвращайся медленно. Нельзя при повышенном давлении, глаукоме, проблемах с сердцем.</li>
+      <li><b>Проверка:</b> смотри на боль через час-два после. Легче и держится — оставляй. Хуже — убирай.</li>
+      <li><b>Растяжка передней поверхности бедра</b> в конце тренировки — 30 с на сторону.</li>
+    </ul>
+  </div>
+
+  <div class="block">
+    <h2>Мелочи, на которых чаще всего срывают спину</h2>
+    <ul class="plain">
+      <li><b>Гантели с пола</b> поднимай присев, спина ровная, гантели у ног. Не наклоняйся за ними с прямыми ногами.</li>
+      <li><b>В жим гантелей</b> садишься на край скамьи с гантелями на бёдрах и ложишься вместе с ними, подталкивая их коленями. После подхода так же: гантели на грудь, потом на бёдра, садишься. Не роняй их в стороны.</li>
+      <li><b>Тяга горизонтального блока</b>: корпус неподвижен. Не тянись вперёд за рукоятью — округление под весом и есть главный риск.</li>
+      <li><b>Сгибания ног лёжа</b>: таз прижат к скамье. Выгибается поясница — вес меньше.</li>
+      <li><b>Сплит-присед</b>: корпус вертикально. Наклон вперёд переносит нагрузку на поясницу.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ОСАНКА -->
+<section class="panel" data-panel="posture" aria-labelledby="tab-posture" hidden>
+  <div class="block">
+    <h2>Сначала понять, почему выпирает живот</h2>
+    <p class="lead">У выпирающего низа живота три частые причины, и лечатся они по-разному. Часто их две или все три сразу. Проверь каждую:</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Причина</th><th>Как проверить</th><th>Что делать</th></tr></thead>
+      <tbody>
+        <tr><td><b>Вздутие</b></td><td>Утром натощак живот плоский, к вечеру или после еды выпирает</td><td>Это кишечник, не осанка. Блок «Живот и ЖКТ» во вкладке <a href="#food">«Питание»</a></td></tr>
+        <tr><td><b>Привычная стойка</b></td><td>Фото сбоку в полный рост, стоишь как обычно. Таз уехал вперёд стоп, верх спины откинут назад, сильный прогиб в пояснице, рёбра торчат вперёд</td><td>Дыхание 90/90, привычка «рёбра вниз», ягодицы и пресс в зале</td></tr>
+        <tr><td><b>Слабый пресс</b></td><td>Лёжа на спине, ноги вверх. Медленно опускаешь прямые ноги: поясница отрывается от пола раньше, чем ноги дошли до 45°</td><td>Пресс в конце каждой тренировки</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="block">
+    <h2>Что упражнения реально могут, а что нет</h2>
+    <ul class="plain">
+      <li><b>Грудной кифоз</b> (сутулость) упражнениями уменьшается. В исследованиях эффект умеренный, но стабильный, если делать регулярно месяцами.</li>
+      <li><b>Наклон таза</b> упражнениями меняется слабо: на снимках градусы почти не двигаются. Зато сильно меняется то, как ты <i>привычно стоишь</i>, а на фото и в зеркале видно именно это.</li>
+      <li><b>Впалая грудь</b> (воронкообразная деформация) — это форма грудины и рёбер. У взрослого тренировки её не исправляют. Но грудные мышцы и ровный грудной отдел заметно её маскируют. Если вдавление глубокое или мешает дышать на нагрузке, сходи к торакальному хирургу: есть вакуумный колокол (у взрослых работает слабее, чем у подростков) и операция.</li>
+    </ul>
+  </div>
+
+  <div class="block">
+    <h2>Что добавлено в план</h2>
+    <ol class="steps">
+      <li><h3>Пресс в конце каждой тренировки</h3><p class="why">Упражнения, где пресс не даёт тазу наклониться вперёд, а пояснице прогнуться: RKC-планка, ролик с колен, опускание ног с прижатой поясницей. Скручиваний нет — сгибание поясницы под нагрузкой с грыжей ни к чему, а прессу оно не нужнее этих упражнений.</p></li>
+      <li><h3>Дыхание 90/90 утром</h3><p class="why">Полный выдох с опусканием рёбер учит пресс работать в положении «рёбра над тазом». Доказательная база слабая, но риска ноль, и это ровно то, чего тебе не хватает: поясница всё время напряжена, пресс выключен.</p></li>
+      <li><h3>Разгибание грудного отдела утром</h3><p class="why">Против сутулости, плюс все тяги в зале. Спина сверху сильнее — грудь не «проваливается».</p></li>
+      <li><h3>Ягодицы и растяжка передней поверхности бедра</h3><p class="why">Уже есть в плане: ягодичный мост, сплит-присед, выпад на колене.</p></li>
+      <li><h3>Жим на наклонной</h3><p class="why">Верх груди — та зона, которая визуально больше всего прикрывает впалую грудь.</p></li>
+    </ol>
+  </div>
+
+  <div class="block">
+    <h2>Привычка в течение дня</h2>
+    <p class="lead">Несколько раз в день, когда стоишь: <b>вес на середине стопы, таз не выдвинут вперёд, рёбра опущены, ягодицы слегка напряжены</b>. Не втягивай живот — просто выдохни и почувствуй, как рёбра опускаются, а пресс включается. Повесь напоминание на телефон на первые 2–3 недели, потом это станет автоматическим.</p>
+    <p class="muted">Делай фото сбоку раз в 4 недели: одинаковое время дня, свет, расстояние, натощак. По зеркалу каждый день изменений не увидишь.</p>
+  </div>
+</section>
+
+<!-- ПИТАНИЕ -->
+<section class="panel" data-panel="food" aria-labelledby="tab-food" hidden>
+  <div class="block">
+    <h2>Цифры</h2>
+    <div class="tbl"><table>
+      <tbody>
+        <tr><td>Калории</td><td class="num">2300 → 2700</td><td class="small muted">Сейчас ты ешь ~2000. Поднимаем постепенно, за 4 недели, потом подстраиваем по весам</td></tr>
+        <tr><td>Белок</td><td class="num">1,6–2,2 г/кг</td><td class="small muted">Дневник считает в граммах по твоему весу. Выше 1,6 г/кг рост почти не ускоряется, но запас не вредит</td></tr>
+        <tr><td>Белок за приём</td><td class="num">30–45 г × 3–4</td><td class="small muted">Лучше, чем всё за один-два приёма</td></tr>
+        <tr><td>Прирост веса</td><td class="num">+0,2–0,35 кг/нед</td><td class="small muted">С 5-й недели. Быстрее — лишнее уходит в жир</td></tr>
+        <tr><td>Креатин</td><td class="num">5 г в день</td><td class="small muted">Моногидрат, каждый день, в любое время. Без загрузки</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="block">
+    <h2>Без фанатизма: как было и как теперь</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>Раньше</th><th>Теперь</th></tr></thead>
+      <tbody>
+        <tr><td>3200–3500 ккал, впихивал горы риса, каши, огурцов</td><td>2700 ккал, калории из плотных продуктов, а не из объёма</td></tr>
+        <tr><td>Есть строго за час до тренировки и сразу после</td><td>Не нужно. Нормально поел за 2–4 часа до — хватит. После — обычный следующий приём в течение пары часов. «Анаболическое окно» на деле растянуто на часы</td></tr>
+        <tr><td>Тренировки по 2–2,5 часа</td><td>До 80 минут. Сверх 10–20 тяжёлых подходов в неделю на мышцу рост почти не прибавляется, а усталость копится</td></tr>
+        <tr><td>Ешь, когда заболел живот от голода</td><td>Ешь по часам. Голод сейчас — плохой ориентир</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="block">
+    <h2>Ешь по часам, а не по голоду</h2>
+    <p class="lead">Ставишь 4 напоминания на телефон: завтрак, обед, перекус, ужин. Каждое — примерно в одно и то же время. После месяцев недоедания и стресса голод приходит поздно и сразу с болью в животе, ждать его — значит снова есть 2000.</p>
+    <p class="muted">Первые 1–2 недели будет «не лезет». Поэтому начинаем с 2300 и поднимаем постепенно.</p>
+  </div>
+
+  <div class="block">
+    <h2>Как поднимать калории</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>Недели</th><th>Цель</th><th>Что ешь</th></tr></thead>
+      <tbody>
+        <tr><td class="num">1–2</td><td class="num">~2300</td><td>Завтрак, 2 контейнера (обед и ужин), протеин на молоке</td></tr>
+        <tr><td class="num">3–4</td><td class="num">~2500</td><td>+ банан и 2 ст. л. арахисовой пасты в коктейль</td></tr>
+        <tr><td class="num">5+</td><td class="num">~2700</td><td>+ 30 г орехов или кусок хлеба с сыром. Дальше по весам</td></tr>
+      </tbody>
+    </table></div>
+    <p class="small muted">С 5-й недели взвешивайся каждое утро после туалета и считай среднее за неделю. Две недели подряд вес растёт меньше чем на 0,15 кг в неделю — добавь ~200 ккал. Быстрее 0,5 кг в неделю — убери ~200. С креатином в первый месяц может прибавиться 1–2 кг воды в мышцах, это не жир.</p>
+  </div>
+
+  <div class="block">
+    <h2>Калории плотностью, а не объёмом</h2>
+    <p class="lead">Когда аппетита мало, калории добирают продуктами, где их много в маленьком объёме. Они не распирают живот.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Добавка к еде</th><th>ккал</th></tr></thead>
+      <tbody>
+        <tr><td>1 ст. л. масла в контейнер</td><td class="num">90</td></tr>
+        <tr><td>2 ст. л. арахисовой пасты</td><td class="num">190</td></tr>
+        <tr><td>30 г орехов</td><td class="num">180</td></tr>
+        <tr><td>30 г сыра</td><td class="num">110</td></tr>
+        <tr><td>300 мл молока 2,5%</td><td class="num">160</td></tr>
+      </tbody>
+    </table></div>
+    <p class="muted"><b>Коктейль, если есть блендер:</b> 300 мл молока, порция протеина, банан, 2 ст. л. арахисовой пасты. 1 минута, ~650 ккал и 40 г белка. Пить легче, чем есть: жидкие калории меньше подавляют аппетит.</p>
+  </div>
+
+  <div class="block">
+    <h2>Живот и ЖКТ</h2>
+    <ul class="plain">
+      <li><b>Боль в животе от голода — повод сходить к гастроэнтерологу.</b> Это частый признак гастрита или язвы, и часто это хеликобактер, который лечится одним курсом. Пока болит, аппетита нормального не будет.</li>
+      <li><b>Идти сразу, не откладывая:</b> чёрный стул, рвота с кровью, боль будит ночью, вес падает без причины.</li>
+      <li><b>Порции не больше 700–800 ккал</b> за раз. Лучше 4 средних приёма, чем 2 огромных.</li>
+      <li><b>Овощи — тушёные или замороженные, а не горы сырых огурцов.</b> Клетчатку добавляй постепенно: резкий скачок даёт вздутие.</li>
+      <li><b>Ешь не на бегу</b> — 15 минут на приём. Глотание воздуха на ходу тоже даёт вздутие.</li>
+    </ul>
+  </div>
+
+  <div class="block">
+    <h2>День целиком (с 5-й недели)</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>Приём</th><th>Что</th><th>Готовка</th><th>ккал / белок</th></tr></thead>
+      <tbody>
+        <tr><td>Завтрак</td><td>Один из вариантов ниже</td><td class="num">0–7 мин</td><td class="num">~620 / 36 г</td></tr>
+        <tr><td>Обед</td><td>Контейнер «курица + рис + овощи»</td><td class="num">3 мин</td><td class="num">~680 / 45 г</td></tr>
+        <tr><td>Перекус</td><td>Коктейль: молоко, протеин, банан, арахисовая паста</td><td class="num">1 мин</td><td class="num">~650 / 40 г</td></tr>
+        <tr><td>Ужин</td><td>Контейнер «по-флотски»</td><td class="num">3 мин</td><td class="num">~800 / 48 г</td></tr>
+        <tr class="hl"><td><b>Итого</b></td><td></td><td></td><td class="num"><b>~2750 / ~170 г</b></td></tr>
+      </tbody>
+    </table></div>
+    <p class="small muted">Цифры примерные: ±10% не играет роли, рулят весы.</p>
+  </div>
+
+  <div class="block">
+    <h2>Завтрак: варианты</h2>
+    <div class="grid2">
+      <div class="card opt"><h3>Яичница</h3><p class="small">4 яйца, 2 куска хлеба, 30 г сыра. Одна сковорода, 7 минут.</p><p class="k">~620 ккал · 36 г</p></div>
+      <div class="card opt"><h3>Лаваш с курицей</h3><p class="small">Курица из контейнера, сыр, соус, свернуть и 2 минуты на сухой сковороде.</p><p class="k">~600 ккал · 40 г</p></div>
+      <div class="card opt"><h3>Вообще без готовки</h3><p class="small">Тот же коктейль из блендера, а перекус днём — яйца или лаваш.</p><p class="k">~650 ккал · 40 г</p></div>
+      <div class="card opt"><h3>Если утром не лезет</h3><p class="small">Только протеин на молоке, а завтрак — вторым приёмом через 2–3 часа.</p><p class="k">~280 ккал · 32 г</p></div>
+    </div>
+  </div>
+
+  <div class="block">
+    <h2>Готовка: воскресенье и среда, ~40 минут</h2>
+    <p class="muted">За раз — 6 контейнеров: обед и ужин на 3 дня. Готовая еда в холодильнике хранится 3–4 дня, поэтому готовишь дважды в неделю.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Время</th><th>Что делаешь</th></tr></thead>
+      <tbody>
+        <tr><td class="num">0:00</td><td>Включаешь духовку на 200 °C. 600 г куриного бедра без кожи в пакет: 1 ч. л. соли, паприка, сушёный чеснок, 1 ст. л. масла. Встряхнуть, выложить на противень.</td></tr>
+        <tr><td class="num">0:05</td><td>Курицу в духовку на 25–30 мин. Ставишь две кастрюли с водой.</td></tr>
+        <tr><td class="num">0:08</td><td>Рис 270 г промыть, залить 540 мл воды, посолить. После закипания 15 мин под крышкой на слабом огне.</td></tr>
+        <tr><td class="num">0:10</td><td>600 г фарша на сковороду, 10 мин помешивая. Соль, перец, 2 ст. л. томатной пасты.</td></tr>
+        <tr><td class="num">0:12</td><td>Макароны 300 г в кипяток на 9–10 мин, слить, смешать с фаршем.</td></tr>
+        <tr><td class="num">0:35</td><td>Курицу достать и порезать. Раскладываешь: 3 контейнера курица + рис, 3 контейнера по-флотски.</td></tr>
+      </tbody>
+    </table></div>
+    <p class="small muted">Замороженные овощи (150 г) кладёшь сверху при разогреве: 3–4 минуты в микроволновке. В первые 2 недели порции чуть меньше — сколько лезет.</p>
+  </div>
+
+  <div class="block">
+    <h2>Список покупок на неделю</h2>
+    <ul class="plain cols">
+      <li>Куриное бедро без кожи — 1,2 кг</li>
+      <li>Фарш говяжий или смешанный — 1,2 кг</li>
+      <li>Рис — 600 г</li>
+      <li>Макароны — 600 г</li>
+      <li>Овощная смесь замороженная — 1–1,5 кг</li>
+      <li>Яйца — 30 шт</li>
+      <li>Хлеб — 1–2 буханки или лаваш</li>
+      <li>Сыр — 200–300 г</li>
+      <li>Молоко — 3 л</li>
+      <li>Бананы — 7 шт</li>
+      <li>Арахисовая паста — банка</li>
+      <li>Орехи — 200 г</li>
+      <li>Томатная паста, масло, специи</li>
+      <li>Протеин и креатин — раз в 1–2 месяца</li>
+    </ul>
+  </div>
+</section>
+
+<!-- СОН И РЕЖИМ -->
+<section class="panel" data-panel="mode" aria-labelledby="tab-mode" hidden>
+  <div class="block">
+    <h2>Почему сон — часть плана, а не пожелание</h2>
+    <ul class="plain">
+      <li>После одной бессонной ночи синтез мышечного белка падает примерно на 18%.</li>
+      <li>В исследовании на похудении при сне 5,5 часа люди теряли на 60% больше мышц, чем при 8,5 часах, при той же потере веса.</li>
+      <li>Ты сейчас ешь мало и спишь мало. Именно в этой комбинации мышцы уходят быстрее всего.</li>
+    </ul>
+  </div>
+
+  <div class="block">
+    <h2>Что реально работает, по убыванию пользы</h2>
+    <ol class="steps">
+      <li><h3>Фиксированное время подъёма</h3><p class="why">Плюс-минус 30 минут каждый день, включая выходные. Время отбоя подстроится само. Это сильнее, чем пытаться лечь пораньше.</p></li>
+      <li><h3>Дневной свет утром</h3><p class="why">10–20 минут на улице в первый час после подъёма. Свет сдвигает внутренние часы так, что вечером легче уснуть. Это и есть утренняя прогулка: свет, шаги и спина за один раз.</p></li>
+      <li><h3>Кофеин — не позже чем за 8 часов до сна</h3><p class="why">Кофеин за 6 часов до сна в исследовании сократил сон примерно на час, причём люди этого не замечали. Энергетики и крепкий чай считаются.</p></li>
+      <li><h3>Не можешь уснуть 20 минут — вставай</h3><p class="why">Выходишь из кровати, приглушённый свет, что-то спокойное без телефона, возвращаешься, когда клонит в сон. Кровать должна ассоциироваться со сном, а не с прокруткой ленты. Это основа когнитивно-поведенческой терапии бессонницы.</p></li>
+      <li><h3>Тренировка вечером — нормально</h3><p class="why">На сон не влияет, если закончил хотя бы за час до отбоя.</p></li>
+      <li><h3>Не добрал сна — дневной сон до 20 минут</h3><p class="why">До 16:00, иначе сломает следующую ночь.</p></li>
+    </ol>
+    <p class="muted">Если не можешь уснуть 3+ ночи в неделю дольше 3 месяцев — это бессонница. Первая линия лечения — когнитивно-поведенческая терапия бессонницы (КПТ-И), а не таблетки. Есть приложения и специалисты.</p>
+  </div>
+
+  <div class="block">
+    <h2>Дыхательные практики</h2>
+    <div class="grid2">
+      <div class="card opt">
+        <h3>Циклический вздох</h3>
+        <p class="small">Два вдоха носом подряд (второй короткий, «добрать»), потом длинный медленный выдох ртом. 5 минут в день, когда угодно: на прогулке, между парами.</p>
+        <p class="small muted">В исследовании 2023 года улучшил настроение и снизил тревогу сильнее, чем медитация той же длительности.</p>
+      </div>
+      <div class="card opt">
+        <h3>Медленное дыхание перед сном</h3>
+        <p class="small">Вдох 4 с, выдох 6 с, около 6 дыханий в минуту. 5 минут в кровати.</p>
+        <p class="small muted">Снижает возбуждение нервной системы и помогает уснуть.</p>
+      </div>
+    </div>
+    <p class="small muted">Дыхание 90/90 утром — про осанку и пресс, оно во вкладке <a href="#back">«Спина»</a>.</p>
+  </div>
+
+  <div class="block">
+    <h2>Шаги</h2>
+    <p class="lead">7–10 тысяч в день. Ходьба связана с лучшим состоянием дисков, а утренняя прогулка на улице ещё и закрывает свет для сна. Проще всего — часть дороги до универа или работы пешком.</p>
+  </div>
+
+  <div class="block">
+    <h2>Пример дня с тренировкой</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>Когда</th><th>Что</th></tr></thead>
+      <tbody>
+        <tr><td class="num">7:30</td><td>Подъём, утренний комплекс 10 мин</td></tr>
+        <tr><td class="num">7:45</td><td>Завтрак, потом на улицу: свет и шаги по дороге</td></tr>
+        <tr><td class="num">13:00</td><td>Обед, контейнер</td></tr>
+        <tr><td class="num">15:30</td><td>Последний кофе</td></tr>
+        <tr><td class="num">16:00</td><td>Коктейль</td></tr>
+        <tr><td class="num">18:30–19:50</td><td>Тренировка</td></tr>
+        <tr><td class="num">20:30</td><td>Ужин, контейнер</td></tr>
+        <tr><td class="num">23:00</td><td>Экран убрал, 5 минут медленного дыхания</td></tr>
+        <tr><td class="num">23:30</td><td>Сон, 8 часов до подъёма</td></tr>
+      </tbody>
+    </table></div>
+    <p class="small muted">Время сдвигай под своё расписание — важно, чтобы подъём был одинаковым, а между ним и отбоем помещались 7–8 часов.</p>
+  </div>
+</section>
+</main>
+
+<footer class="wrap">
+  <div class="label">На чём основано</div>
+  <ul>
+    <li>Объём и частота: Schoenfeld 2017, 2019. Отдых между подходами: Schoenfeld 2016, Singer 2024. Порядок упражнений: Nunes 2021</li>
+    <li>Близость к отказу: Refalo 2023, Robinson 2024. Запас повторов вместо процентов: Helms 2018, Graham &amp; Cleather 2021</li>
+    <li>Упражнения в растянутой позиции: Maeo 2023 (трицепс из-за головы)</li>
+    <li>Мышечная память: Seaborne 2018, Bruusgaard 2010</li>
+    <li>Спина: Snook 1998 (утренние наклоны), Chiu 2015 (рассасывание грыж), рекомендации NICE NG59, Cochrane — Wegner 2013 (вытяжение)</li>
+    <li>Осанка: González-Gálvez 2019 (упражнения и грудной кифоз)</li>
+    <li>Питание: Morton 2018 (белок), Schoenfeld &amp; Aragon 2018 (распределение белка), Schoenfeld 2017 (белок до и после тренировки), позиция ISSN по креатину 2017</li>
+    <li>Сон: Lamon 2021 (синтез белка), Nedeltcheva 2010 (потеря мышц), Drake 2013 (кофеин), Stutz 2019 (вечерние тренировки), рекомендации ACP 2016 (КПТ-И)</li>
+    <li>Дыхание: Balban 2023 (циклический вздох), Zaccaro 2018 (медленное дыхание)</li>
+  </ul>
+  <p style="margin-top:10px">Это не замена врачу. При онемении, слабости в ноге или нарушениях со стороны тазовых органов — сразу к неврологу.</p>
+</footer>
+
+<script>
+(function(){
+  var PH = {
+    1:{name:'Вкат', weeks:'Недели 1–3', main:'3 × 12–15', iso:'3 × 15–20', rirMain:'3–4 в запасе', rirIso:'3 в запасе', color:'var(--p1)',
+       note:'Неделя 1 — подбор весов по алгоритму из вкладки «Как выполнять». Цель фазы — вспомнить технику и дать связкам и спине привыкнуть. Блок спины — уровень 1.'},
+    2:{name:'Набор', weeks:'Недели 4–6', main:'3 × 8–12', iso:'3 × 12–15', rirMain:'2 в запасе', rirIso:'1–2 в запасе', color:'var(--p2)',
+       note:'Повторов меньше, вес больше. В первую тренировку фазы сразу бери вес, с которым попадаешь в новый диапазон. Блок спины — уровень 2.'},
+    3:{name:'Форма', weeks:'Недели 7–8', main:'4 × 6–10', iso:'3 × 10–15', rirMain:'1–2 в запасе', rirIso:'0–1 в запасе', color:'var(--p3)',
+       note:'Самая тяжёлая фаза: в жимах и тягах 4 подхода, изоляция почти до отказа. Блок спины — уровень 3.'}
+  };
+
+  var BACK = {name:'Блок спины', special:true, scheme:'10 мин', cue:'Он же разминка. Упражнения по уровню фазы — во вкладке <a href="#back">«Спина»</a>.'};
+  var COOL = {name:'Заминка', tail:true, scheme:'3 мин', cue:'Вис на турнике 2 × 20–30 с, растяжка передней поверхности бедра 30 с на сторону. По желанию.'};
+  var LEGCURL = {name:'Сгибания ног лёжа', t:'iso', cue:'Таз прижат к скамье, поясница не прогибается. Если начинает выгибать — вес меньше: в этом тренажёре это главный риск для твоей спины.'};
+
+  var DAYS = [
+    {day:'Понедельник', title:'День 1 · первой грудь', ex:[
+      BACK,
+      {name:'Жим гантелей лёжа', t:'main', warm:2, cue:'Лопатки сведены, гантели опускаешь до уровня груди, локти примерно 45° к корпусу.'},
+      {name:'Тяга верхнего блока', t:'main', cue:'Тянешь к верху груди, корпус почти неподвижен, без раскачки.'},
+      {name:'Разгибания ног в тренажёре', t:'iso', warm:1, cue:'Опускаешь 2–3 секунды, внизу без отбива. Спина прижата к спинке.'},
+      LEGCURL,
+      {name:'Махи в стороны', t:'iso', cue:'Гантели или нижний блок одной рукой. Корпус не раскачиваешь.'},
+      {name:'Разгибание рук из-за головы на блоке', t:'iso', sets:{1:'2 × 15–20',2:'3 × 12–15',3:'3 × 10–15'}, cue:'Канат, стоишь спиной к блоку. Длинная головка трицепса растягивается и растёт сильнее, чем в разгибаниях вниз. Пресс напряжён, поясница не прогибается.'},
+      {name:'Пресс: RKC-планка', t:'core', sets:{1:'3 × 15–20 с',2:'3 × 20–30 с',3:'3 × 30–40 с'},
+        cue:'Планка на локтях, но ягодицы и пресс сжаты на максимум, локти тянешь к носкам, таз подкручен (поясница чуть скруглена, а не провисает). В разы тяжелее обычной планки: если 30 с даются легко, делаешь неправильно.'},
+      COOL
+    ]},
+    {day:'Среда', title:'День 2 · первой спина', ex:[
+      BACK,
+      {name:'Подтягивания', t:'main', warm:'pull', sets:{1:'3 × 6–10',2:'3 × 6–10',3:'4 × 5–8'},
+        how:{1:'Свой вес. Если делаешь больше 10 с запасом 3 — сразу вешай 5 кг на пояс.',2:'Во всех подходах сделал 10 — добавляй 2,5–5 кг на пояс.',3:'С весом на поясе, повторы ниже, вес выше.'},
+        cue:'Полная амплитуда, без раскачки и рывков. Вес на поясе тянет позвоночник вниз, а не сжимает его, поэтому спине он не мешает. Слезай на скамью, не спрыгивай.'},
+      {name:'Жим гантелей на наклонной', t:'main', warm:1, cue:'Скамья около 30°, не выше: при большем угле работают в основном плечи.'},
+      {name:'Сплит-присед', t:'main', sets:{1:'3 × 10',2:'3 × 10–12',3:'3 × 8–12'}, perLeg:true,
+        how:{1:'Без веса, держишься рукой за стойку. Глубина по ощущениям.',2:'Без веса, полная амплитуда. Если спина в зелёной зоне — гантели 4–8 кг.',3:'Гантели 8–14 кг, если весь второй этап был зелёным.'},
+        cue:'Корпус вертикально, шаг широкий. Если спине некомфортно даже без веса — замени на разгибания ног одной ногой.'},
+      {name:'Тяга с упором грудью', t:'main', cue:'Тренажёр или Т-гриф с упором. Грудь прижата, поэтому поясница вес не держит.'},
+      {name:'Сгибания на бицепс на наклонной скамье', t:'iso', cue:'Спинка 45–60°, руки висят за корпусом, бицепс растянут.'},
+      {name:'Махи в стороны', t:'iso', cue:'Сегодня на нижнем блоке одной рукой, если в понедельник были гантели.'},
+      {name:'Пресс: ролик', t:'core', sets:{1:'3 × 15–20 с',2:'3 × 6–8',3:'3 × 8–12'},
+        how:{1:'Пока без ролика: «лодочка» лёжа на спине с согнутыми коленями, поясница прижата к полу.',2:'Ролик с колен, катишь недалеко — до момента, пока поясница не начинает провисать.',3:'Ролик с колен, амплитуда дальше.'},
+        cue:'Главное — поясница не провисает. Провисает — катишь слишком далеко. Это ровно то, чего не хватает: пресс не даёт тазу наклониться вперёд.'},
+      COOL
+    ]},
+    {day:'Пятница', title:'День 3 · первыми ноги', ex:[
+      BACK,
+      {name:'Ягодичный мост', t:'main', warm:1, sets:{1:'3 × 15',2:'3 × 10–12',3:'3 × 8–12'},
+        how:{1:'На полу, пауза 2 с наверху. Стало легко — на одной ноге.',2:'Плечи на скамье, блин 10–20 кг на тазу.',3:'Штанга на тазу с подушкой или тренажёр.'},
+        cue:'Позвоночник лежит горизонтально, осевой нагрузки нет. Наверху тело в линию, поясницу не выгибаешь.'},
+      {name:'Разгибания ног в тренажёре', t:'iso', warm:1, cue:'Медленно вниз, без отбива.'},
+      {name:'Жим в тренажёре (хаммер)', t:'main', warm:2, cue:'Или снова жим гантелей лёжа. Плюс тренажёра — не нужно поднимать тяжёлые гантели с пола.'},
+      {name:'Тяга горизонтального блока', t:'main', cue:'Корпус неподвижен. Не тянись вперёд за рукоятью: округление под весом — главный риск для поясницы.'},
+      LEGCURL,
+      {name:'Молотки + трицепс канатом вниз', t:'iso', sets:{1:'2 + 2 × 15–20',2:'2 + 2 × 12–15',3:'2 + 2 × 10–15'}, cue:'По 2 подхода на каждое упражнение.'},
+      {name:'Пресс: опускание ног', t:'core', sets:{1:'3 × 8',2:'3 × 10',3:'3 × 10–12'},
+        how:{1:'Лёжа, колени согнуты 90°, по очереди касаешься пяткой пола.',2:'Обе ноги вместе, колени чуть согнуты.',3:'Подъём коленей в висе с подкручиванием таза или прямые ноги лёжа.'},
+        cue:'Поясница всё время прижата к полу — ладонь под неё не пролезает. Отрывается — ты опустил ноги ниже, чем пока контролируешь.'},
+      COOL
+    ]}
+  ];
+
+  var phase = 1;
+  try { var s = localStorage.getItem('gym-phase'); if (s && PH[s]) phase = +s; } catch(e){}
+
+  function warmText(n){
+    if (n === 2) return 'разминка: 50% × 10, 75% × 5';
+    if (n === 1) return 'разминка: 50% × 12';
+    if (n === 'pull') return 'разминка: вис + 1 подход × 3–5';
+    return '';
+  }
+
+  function renderDays(){
+    var p = PH[phase];
+    document.documentElement.style.setProperty('--ph', p.color);
+    document.getElementById('phase-note').innerHTML =
+      '<span class="dot"></span><p><b>' + p.weeks + ' · ' + p.name + '.</b> ' + p.note + '</p>';
+    var html = '';
+    DAYS.forEach(function(d){
+      html += '<article class="card"><div class="day-head"><h2>' + d.day + '</h2><span class="label">' + d.title + '</span></div><ol class="ex-list">';
+      d.ex.forEach(function(e){
+        var cls = 'ex' + (e.special ? ' special' : '') + (e.tail ? ' tail' : '');
+        var scheme = e.scheme || (e.sets ? e.sets[phase] : (e.t === 'main' ? p.main : p.iso));
+        if (e.perLeg) scheme += ' <span class="small muted">на ногу</span>';
+        html += '<li class="' + cls + '"><span class="name">' + e.name + '</span><span class="scheme">' + scheme + '</span>';
+        if (e.t === 'core'){
+          html += '<span class="meta"><span class="chip warm">отдых 1 мин</span></span>';
+        } else if (e.t){
+          html += '<span class="meta"><span class="chip rir">' + (e.t === 'main' ? p.rirMain : p.rirIso) + '</span>';
+          html += '<span class="chip warm">отдых ' + (e.t === 'main' ? '2–3 мин' : '1,5–2 мин') + '</span>';
+          if (e.warm) html += '<span class="chip warm">' + warmText(e.warm) + '</span>';
+          html += '</span>';
+        }
+        if (e.how) html += '<span class="cue" style="color:var(--ink)"><b>Сейчас:</b> ' + e.how[phase] + '</span>';
+        if (e.cue) html += '<span class="cue">' + e.cue + '</span>';
+        html += '</li>';
+      });
+      html += '</ol></article>';
+    });
+    document.getElementById('days').innerHTML = html;
+    document.querySelectorAll('[data-phase]').forEach(function(b){
+      b.setAttribute('aria-pressed', String(+b.dataset.phase === phase));
+    });
+  }
+
+  document.querySelectorAll('[data-phase]').forEach(function(b){
+    b.addEventListener('click', function(){
+      phase = +b.dataset.phase;
+      try { localStorage.setItem('gym-phase', String(phase)); } catch(e){}
+      renderDays();
+    });
+  });
+
+  var TABS = ['week','how','phases','after','back','posture','food','mode'];
+  function show(name, scroll){
+    if (TABS.indexOf(name) < 0) name = 'week';
+    document.querySelectorAll('[data-panel]').forEach(function(p){ p.hidden = p.dataset.panel !== name; });
+    document.querySelectorAll('[role="tab"]').forEach(function(b){
+      var on = b.dataset.tab === name;
+      b.setAttribute('aria-selected', String(on));
+      if (on && b.scrollIntoView) { try { b.scrollIntoView({block:'nearest', inline:'nearest'}); } catch(e){} }
+    });
+    if (scroll){
+      var nav = document.querySelector('nav.tabs');
+      var y = nav.getBoundingClientRect().top + window.scrollY;
+      if (window.scrollY > y) window.scrollTo(0, y);
+    }
+  }
+  document.querySelectorAll('[role="tab"]').forEach(function(b){
+    b.addEventListener('click', function(){
+      if (location.hash === '#' + b.dataset.tab) show(b.dataset.tab, true);
+      else location.hash = b.dataset.tab;
+    });
+  });
+  window.addEventListener('hashchange', function(){ show(location.hash.slice(1), true); });
+
+  renderDays();
+  show(location.hash.slice(1), false);
+})();
+</script>
+</body>
+</html>
